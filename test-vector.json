@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "input": "tests/data/toy-inputs.json",
+  "input_sha256": "8e6ba300c350c07ff03dc8a45cf4b48ef9905892fed82b9591e481e95db96c25",
+  "expected_model_ids": {
+    "fast": [
+      "ax31-light",
+      "ax31-light",
+      "ax31-light"
+    ],
+    "balanced": [
+      "ax31-light",
+      "ax31-light",
+      "ax31"
+    ],
+    "premium": [
+      "ax31-light",
+      "ax31-light",
+      "ax31"
+    ]
+  }
+}

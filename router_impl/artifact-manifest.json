@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "strategy": {
+    "name": "official-hash-regex-public",
+    "version": "1",
+    "implementation": "router.py",
+    "artifact": "hash-regex-public.v1.json"
+  },
+  "artifact_sha256": "c5f0545f20b902143ccb78ad174ccd5408f4c28d0898943e82e7951b6a8b9871",
+  "tokenizer": {
+    "id": "regex-casefold-number-v1",
+    "retraining_required_if_changed": true
+  },
+  "training": {
+    "input_sha256": "029a0fb1f70432a05b837a1291d86d42278bb202d808a6a12911b0dae8628ac4",
+    "outcomes_sha256": "97a5a787086b3e1d9fa9c7945518543540e527ea248df4a4760de581b612a4ba",
+    "episodes": 1760
+  },
+  "policy": {
+    "id": "ossp-2026-prompt-router-v1",
+    "canonical_sha256": "7c892c423da5fa762e7e1a93b9fa071be51e259b65d2b63a5ba434c4342d7a8e"
+  },
+  "source": {
+    "voltchange_commit": "bef479ec700b1580630914e34ad4378abc41bf65",
+    "official_challenge_commit": "3cccbf602077a846c13b2cb1356eee1559a631db"
+  },
+  "runtime": {
+    "platform": "linux/arm64",
+    "base_image": "python:3.13.11-slim-bookworm@sha256:20080e807bfc404f8450b185cf0fc95d553462673598549613735f70a5b4d5d0",
+    "network": false,
+    "gpu": false,
+    "runtime_dependencies": [],
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 2147483648,
+      "pids": 32,
+      "seconds_per_tier": 90
+    }
+  },
+  "licenses": [
+    "Apache-2.0"
+  ]
+}

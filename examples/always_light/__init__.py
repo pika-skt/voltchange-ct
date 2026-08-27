@@ -1,0 +1,1 @@
+"""Minimal swappable router example."""

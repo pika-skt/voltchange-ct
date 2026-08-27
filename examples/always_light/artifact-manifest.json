@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "strategy": {
+    "name": "always-light-swap-example",
+    "version": "1",
+    "implementation": "router.py",
+    "artifact": null
+  },
+  "artifact_sha256": null,
+  "tokenizer": null,
+  "training": null,
+  "policy": {
+    "id": "ossp-2026-prompt-router-v1"
+  },
+  "runtime": {
+    "platform": "linux/arm64",
+    "network": false,
+    "gpu": false,
+    "runtime_dependencies": []
+  },
+  "licenses": [
+    "Apache-2.0"
+  ]
+}

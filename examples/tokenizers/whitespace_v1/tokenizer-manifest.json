@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "tokenizer_id": "whitespace-casefold-number-v1",
+  "entrypoint": "tokenizer.py:tokenize",
+  "input": "Unicode text",
+  "output": "whitespace-delimited case-folded tokens with decimal normalization",
+  "runtime_dependencies": [],
+  "licenses": [
+    "Apache-2.0"
+  ]
+}

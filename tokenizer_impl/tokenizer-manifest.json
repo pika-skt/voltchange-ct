@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "tokenizer_id": "regex-casefold-number-v1",
+  "entrypoint": "tokenizer.py:tokenize",
+  "input": "Unicode text",
+  "output": "case-folded token strings with standalone decimals normalized to <number>",
+  "runtime_dependencies": [],
+  "licenses": [
+    "Apache-2.0"
+  ]
+}

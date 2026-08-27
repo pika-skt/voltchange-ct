@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-27",
+  "source_manifest_sha256": "da260c15ca62777e043cb3b3d1ef55939fabc58796a671e41b815d0e5540ea4a",
+  "host": {
+    "platform": "Linux-7.1.9-arch1-2-x86_64-with-glibc2.44",
+    "python": "3.13.11",
+    "timings_are_official": false
+  },
+  "checks": {
+    "unittest": {
+      "status": "passed",
+      "tests": 13
+    },
+    "ruff": {
+      "status": "passed"
+    },
+    "artifact_sha256": {
+      "status": "passed",
+      "value": "c5f0545f20b902143ccb78ad174ccd5408f4c28d0898943e82e7951b6a8b9871"
+    },
+    "tokenizer_swap_contract": {
+      "status": "passed",
+      "default_tokenizer_id": "regex-casefold-number-v1",
+      "model_tokenizer_mismatch_rejected": true,
+      "source_manifest_binds_selected_tokenizer": true
+    },
+    "default_baseline_parity": {
+      "status": "passed",
+      "reference": "official challenge baselines/hash_regex.py",
+      "train_decisions": 5280,
+      "dev_decisions": 2640,
+      "mismatches": 0
+    },
+    "public_dev_score": {
+      "status": "passed",
+      "final_score": "0.695369318182",
+      "all_tier_budgets_passed": true
+    },
+    "base_image_arm64_manifest": {
+      "status": "passed",
+      "index_digest": "sha256:20080e807bfc404f8450b185cf0fc95d553462673598549613735f70a5b4d5d0",
+      "arm64_manifest_digest": "sha256:a4997dee8fbd74dd6464782b13f5696140f691ff7efc0098bb0b796fce883049"
+    },
+    "official_container_check": {
+      "status": "not_run",
+      "reason": "The current user cannot access /var/run/docker.sock and passwordless sudo is unavailable."
+    }
+  },
+  "host_preflight": {
+    "train": {
+      "episodes": 1760,
+      "peak_rss_kib": 80140,
+      "maximum_tier_seconds": 5.80241979299899,
+      "maximum_output_bytes": 133334
+    },
+    "dev": {
+      "episodes": 880,
+      "peak_rss_kib": 80252,
+      "maximum_tier_seconds": 2.8478620819951175,
+      "maximum_output_bytes": 65050
+    }
+  }
+}
