@@ -1,11 +1,15 @@
 {
   "schema_version": 1,
-  "tokenizer_id": "regex-casefold-number-v1",
+  "tokenizer_id": "mecab-ko-hybrid-pos-v1",
   "entrypoint": "tokenizer.py:tokenize",
   "input": "Unicode text",
-  "output": "case-folded token strings with standalone decimals normalized to <number>",
-  "runtime_dependencies": [],
+  "output": "MeCab-ko POS<TAB>form strings with protected Latin spans tagged SL",
+  "runtime_dependencies": [
+    "mecab-ko==1.0.2",
+    "mecab-ko-dic==1.0.0"
+  ],
   "licenses": [
+    "BSD-3-Clause",
     "Apache-2.0"
   ]
 }

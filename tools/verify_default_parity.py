@@ -2,22 +2,34 @@
 # SPDX-FileCopyrightText: Copyright 2026 voltchange contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Compare the adapted default router with the direct official baseline path."""
+"""Verify the blended router preserves official score/cost head predictions."""
 
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
 
-from ossp_router.protocol import TIERS, load_bundled_policy, load_input
-from runtime.adapter import make_submission
+from ossp_router.protocol import load_input
+from router_impl.hash_regex import load_artifact, predict_episode
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OFFICIAL_REPO = ROOT.parent / "ossp-2026-llm-router-challenge"
+_TOKEN = re.compile(r"[A-Za-z]+|[가-힣]+|\d+|[^\w\s]", re.UNICODE)
+
+
+def _tokenize(text: str) -> tuple[str, ...]:
+    result = []
+    for token in _TOKEN.findall(text):
+        normalized = token.casefold()
+        if normalized.isdecimal():
+            normalized = "<number>"
+        result.append(normalized)
+    return tuple(result)
 
 
 def _load_official_baseline(repository: Path) -> ModuleType:
@@ -42,30 +54,31 @@ def main() -> int:
     args = parser.parse_args()
 
     inputs = load_input(args.input)
-    policy = load_bundled_policy()
     official = _load_official_baseline(args.official_repo)
-    artifact = official.load_artifact(
+    official_artifact = official.load_artifact(
         args.official_repo.resolve() / "baselines" / "hash-regex-public.v1.json"
     )
-    rows = []
-    failed = False
-    for tier in TIERS:
-        direct = official.make_hash_regex_submission(
-            inputs, policy, artifact, tier
-        ).submission
-        adapted = make_submission(inputs, policy, tier)
-        direct_choices = tuple(item.model_id for item in direct.decisions)
-        adapted_choices = tuple(item.model_id for item in adapted.decisions)
-        mismatches = sum(
-            left != right
-            for left, right in zip(direct_choices, adapted_choices, strict=True)
+    runtime_artifact = load_artifact(
+        ROOT / "router_impl" / "hash-regex-public.v1.json"
+    )
+    mismatches = 0
+    for episode in inputs.episodes:
+        expected = official.predict_episode(episode, official_artifact)
+        actual = predict_episode(episode, runtime_artifact, tokenize=_tokenize)
+        mismatches += expected != actual
+    print(
+        json.dumps(
+            {
+                "official_head_parity": {
+                    "episodes": len(inputs.episodes),
+                    "prediction_mismatches": mismatches,
+                }
+            },
+            indent=2,
+            sort_keys=True,
         )
-        failed = failed or mismatches != 0
-        rows.append(
-            {"tier": tier, "episodes": len(direct_choices), "mismatches": mismatches}
-        )
-    print(json.dumps({"parity": rows}, indent=2, sort_keys=True))
-    return 1 if failed else 0
+    )
+    return 1 if mismatches else 0
 
 
 if __name__ == "__main__":

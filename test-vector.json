@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
+  "strategy": "official-hash-regex-mecab-gain-blend-v1",
+  "tokenizer_id": "mecab-ko-hybrid-pos-v1",
+  "gain_artifact_sha256": "1549c899acf27af5d214df84d2602cf3d9c6c22cf1fa4a2ab33a2fa7a5ccd5c6",
   "input": "tests/data/toy-inputs.json",
   "input_sha256": "8e6ba300c350c07ff03dc8a45cf4b48ef9905892fed82b9591e481e95db96c25",
   "expected_model_ids": {

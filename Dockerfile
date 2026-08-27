@@ -9,12 +9,19 @@ ARG TOKENIZER_IMPL=tokenizer_impl
 
 COPY ${ROUTER_IMPL}/requirements.txt /tmp/router-requirements.txt
 COPY ${TOKENIZER_IMPL}/requirements.txt /tmp/tokenizer-requirements.txt
+COPY build-requirements.txt /tmp/build-requirements.txt
 
-RUN mkdir -p /runtime-deps && \
+RUN python3 -m pip install \
+      --disable-pip-version-check \
+      --no-cache-dir \
+      --require-hashes \
+      --requirement /tmp/build-requirements.txt && \
+    mkdir -p /runtime-deps && \
     python3 -m pip install \
       --disable-pip-version-check \
       --no-cache-dir \
       --no-compile \
+      --no-build-isolation \
       --prefix=/runtime-deps \
       --require-hashes \
       --requirement /tmp/router-requirements.txt \
@@ -32,7 +39,7 @@ RUN test "${#SOURCE_MANIFEST_SHA256}" -eq 64 && \
       *) exit 0 ;; \
     esac
 
-LABEL org.opencontainers.image.licenses="Apache-2.0" \
+LABEL org.opencontainers.image.licenses="Apache-2.0 AND BSD-3-Clause AND MIT" \
       io.sktelecom.ossp.source-manifest-sha256="${SOURCE_MANIFEST_SHA256}" \
       io.voltchange.router-implementation="${ROUTER_IMPL}" \
       io.voltchange.tokenizer-implementation="${TOKENIZER_IMPL}"

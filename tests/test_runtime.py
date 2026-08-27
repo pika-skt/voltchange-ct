@@ -19,6 +19,7 @@ from ossp_router.protocol import (
     load_bundled_policy,
     load_input,
 )
+from router_impl.blended_gain import hashed_feature_vector, load_artifact
 from runtime.adapter import RouterContractError, make_submission
 from runtime.contract import canonical_content_json, content_episode_from_official
 from runtime.entrypoint import main
@@ -177,8 +178,10 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o644)
 
     def test_artifact_digest_matches_both_manifests(self) -> None:
-        artifact = ROOT / "router_impl" / "hash-regex-public.v1.json"
-        digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        official = ROOT / "router_impl" / "hash-regex-public.v1.json"
+        gain = ROOT / "router_impl" / "mecab-blended-gain.v1.json"
+        official_digest = hashlib.sha256(official.read_bytes()).hexdigest()
+        gain_digest = hashlib.sha256(gain.read_bytes()).hexdigest()
         root_manifest = json.loads(
             (ROOT / "artifact-manifest.json").read_text(encoding="utf-8")
         )
@@ -187,23 +190,51 @@ class RuntimeTests(unittest.TestCase):
                 encoding="utf-8"
             )
         )
-        self.assertEqual(digest, root_manifest["artifact_sha256"])
-        self.assertEqual(digest, plugin_manifest["artifact_sha256"])
-        self.assertEqual(root_manifest["tokenizer"]["id"], "regex-casefold-number-v1")
-        self.assertEqual(plugin_manifest["tokenizer"]["id"], "regex-casefold-number-v1")
+        for manifest in (root_manifest, plugin_manifest):
+            self.assertEqual(
+                official_digest, manifest["official_artifact_sha256"]
+            )
+            self.assertEqual(gain_digest, manifest["gain_artifact_sha256"])
+            self.assertEqual(
+                manifest["tokenizer"]["id"], "mecab-ko-hybrid-pos-v1"
+            )
+
+    def test_gain_artifact_has_frozen_feature_dimensions(self) -> None:
+        artifact = load_artifact(
+            ROOT / "router_impl" / "mecab-blended-gain.v1.json"
+        )
+        self.assertEqual(artifact.hash_bins, 1024)
+        self.assertEqual(len(artifact.structural_mean), 14)
+        self.assertEqual(
+            {len(head.coefficients) for head in artifact.gain_heads.values()},
+            {1038},
+        )
+
+    def test_runtime_hash_matches_sklearn_frozen_vector(self) -> None:
+        features = ("tok:hello", "pos:SL", "tok:세계", "tok:hello", "fp:123/SN")
+        vector = hashed_feature_vector(features, 1024)
+        expected = {
+            155: -0.3779644730092272,
+            627: -0.7559289460184544,
+            754: -0.3779644730092272,
+            817: 0.3779644730092272,
+        }
+        self.assertEqual({index for index, value in enumerate(vector) if value}, set(expected))
+        for index, value in expected.items():
+            self.assertEqual(vector[index], value)
 
     def test_default_tokenizer_contract_and_frozen_semantics(self) -> None:
-        tokenizer = load_tokenizer(expected_id="regex-casefold-number-v1")
+        tokenizer = load_tokenizer(expected_id="mecab-ko-hybrid-pos-v1")
         self.assertEqual(
             tokenizer("Hello, 세계 123!"),
-            ("hello", ",", "세계", "<number>", "!"),
+            ("SL\tHello", "SC\t,", "NNG\t세계", "SN\t123", "SF\t!"),
         )
 
     def test_incompatible_tokenizer_is_rejected_before_prediction(self) -> None:
         with self.assertRaisesRegex(
             TokenizerContractError, "retrain/export a matching model"
         ):
-            load_tokenizer(expected_id="whitespace-casefold-number-v1")
+            load_tokenizer(expected_id="regex-casefold-number-v1")
 
     def test_source_manifest_binds_selected_tokenizer(self) -> None:
         manifest = build_manifest("router_impl", "tokenizer_impl")
@@ -212,6 +243,7 @@ class RuntimeTests(unittest.TestCase):
         paths = {entry["path"] for entry in manifest["files"]}
         self.assertIn("tokenizer_impl/tokenizer.py", paths)
         self.assertIn("tokenizer_impl/tokenizer-manifest.json", paths)
+        self.assertIn("router_impl/mecab-blended-gain.v1.json", paths)
 
     def test_dockerfile_encodes_the_submission_boundary(self) -> None:
         source = (ROOT / "Dockerfile").read_text(encoding="utf-8")
@@ -236,6 +268,12 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotIn(
             "kiwipiepy",
             (ROOT / "router_impl" / "requirements.txt").read_text(encoding="utf-8"),
+        )
+        self.assertIn(
+            "mecab-ko==1.0.2",
+            (ROOT / "tokenizer_impl" / "requirements.txt").read_text(
+                encoding="utf-8"
+            ),
         )
 
 

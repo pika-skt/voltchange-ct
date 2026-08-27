@@ -19,5 +19,6 @@ Its OCI annotations identify Docker Library Python source revision
 `sha256:1c5d4fd0caad88eb6cb62bcdbc2f580ef2523ab69e86abc2bd2a94703aac9f96`.
 
 The final image removes pip, setuptools, and wheel. Python's license and Debian
-package copyright records remain in the base filesystem. The default router adds no
-third-party Python package.
+package copyright records remain in the base filesystem. The selected router adds
+the hash-pinned MeCab-ko, MeCab-ko dictionary, and mmh3 packages documented in
+`THIRD_PARTY_NOTICES.md`.

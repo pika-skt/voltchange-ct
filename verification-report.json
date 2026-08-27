@@ -1,64 +1,96 @@
 {
   "schema_version": 1,
   "date": "2026-08-27",
-  "source_manifest_sha256": "da260c15ca62777e043cb3b3d1ef55939fabc58796a671e41b815d0e5540ea4a",
-  "host": {
-    "platform": "Linux-7.1.9-arch1-2-x86_64-with-glibc2.44",
-    "python": "3.13.11",
-    "timings_are_official": false
-  },
+  "source_manifest_sha256": "f2c7d3844cdd4f1c287c84c0e90b9965ddbaf8a420b29304882ee51ebe9bf690",
   "checks": {
     "unittest": {
       "status": "passed",
-      "tests": 13
+      "tests": 15
     },
     "ruff": {
-      "status": "passed"
-    },
-    "artifact_sha256": {
       "status": "passed",
-      "value": "c5f0545f20b902143ccb78ad174ccd5408f4c28d0898943e82e7951b6a8b9871"
+      "scope": "changed runtime, exporter, and test files"
     },
-    "tokenizer_swap_contract": {
+    "training_runtime_feature_parity": {
       "status": "passed",
-      "default_tokenizer_id": "regex-casefold-number-v1",
-      "model_tokenizer_mismatch_rejected": true,
-      "source_manifest_binds_selected_tokenizer": true
-    },
-    "default_baseline_parity": {
-      "status": "passed",
-      "reference": "official challenge baselines/hash_regex.py",
-      "train_decisions": 5280,
-      "dev_decisions": 2640,
+      "split": "dev",
+      "episodes": 880,
       "mismatches": 0
     },
-    "public_dev_score": {
+    "official_score_cost_head_parity": {
       "status": "passed",
-      "final_score": "0.695369318182",
-      "all_tier_budgets_passed": true
+      "split": "dev",
+      "episodes": 880,
+      "mismatches": 0
     },
-    "base_image_arm64_manifest": {
+    "container_public_dev_score": {
       "status": "passed",
-      "index_digest": "sha256:20080e807bfc404f8450b185cf0fc95d553462673598549613735f70a5b4d5d0",
-      "arm64_manifest_digest": "sha256:a4997dee8fbd74dd6464782b13f5696140f691ff7efc0098bb0b796fce883049"
+      "final_score": "0.700653409091",
+      "tiers": {
+        "fast": {
+          "quality": "0.663920454545",
+          "budget_ratio": "1.197378262977",
+          "budget_limit_ratio": "1.25",
+          "model_counts": {"ax31-light": 541, "ax31": 339, "axk1-think": 0}
+        },
+        "balanced": {
+          "quality": "0.702840909091",
+          "budget_ratio": "1.905316160622",
+          "budget_limit_ratio": "2.0",
+          "model_counts": {"ax31-light": 265, "ax31": 566, "axk1-think": 49}
+        },
+        "premium": {
+          "quality": "0.747443181818",
+          "budget_ratio": "3.867217989660",
+          "budget_limit_ratio": "4.0",
+          "model_counts": {"ax31-light": 232, "ax31": 461, "axk1-think": 187}
+        }
+      }
     },
     "official_container_check": {
-      "status": "not_run",
-      "reason": "The current user cannot access /var/run/docker.sock and passwordless sudo is unavailable."
+      "status": "passed",
+      "image_id": "sha256:3c1a3184111e17a823f0dedf853dbf3c558cb9a6836726e8afa9a620cf9e1f26",
+      "platform": "linux/arm64",
+      "workload": {
+        "episodes": 2640,
+        "bytes": 11780297,
+        "sha256": "542caab9eb481c7ac5f87f3752db02aabef83d42f2c0962e5557dab0c7a1f04f"
+      },
+      "limits": {
+        "cpu_cores": 2,
+        "memory_bytes": 2147483648,
+        "processes_and_threads_total": 32,
+        "wall_time_seconds_per_tier": 90
+      },
+      "elapsed_seconds": {
+        "fast": 28.51062825,
+        "balanced": 28.287256375,
+        "premium": 28.809416542
+      },
+      "checker_compatibility_note": "A temporary wrapper removed only Docker 28.0.1's unsupported image-inspect --platform option; all official docker run isolation and resource-limit arguments were unchanged."
+    },
+    "image_configuration": {
+      "status": "passed",
+      "size_bytes": 79119095,
+      "user": "65532:65532",
+      "entrypoint": ["python3", "-m", "runtime.entrypoint"],
+      "declared_volumes": false,
+      "license_label": "Apache-2.0 AND BSD-3-Clause AND MIT",
+      "runtime_dependencies": {
+        "mmh3": "5.2.0",
+        "mecab-ko": "1.0.2",
+        "mecab-ko-dic": "1.0.0"
+      },
+      "build_tools_present_in_runtime": false
     }
   },
   "host_preflight": {
-    "train": {
-      "episodes": 1760,
-      "peak_rss_kib": 80140,
-      "maximum_tier_seconds": 5.80241979299899,
-      "maximum_output_bytes": 133334
-    },
-    "dev": {
-      "episodes": 880,
-      "peak_rss_kib": 80252,
-      "maximum_tier_seconds": 2.8478620819951175,
-      "maximum_output_bytes": 65050
+    "dev_episodes": 880,
+    "max_rss_bytes": 118276096,
+    "elapsed_seconds": {
+      "fast": 11.071176834,
+      "balanced": 10.668799708,
+      "premium": 10.839282541
     }
   }
 }

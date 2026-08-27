@@ -1,28 +1,45 @@
 {
   "schema_version": 1,
   "strategy": {
-    "name": "official-hash-regex-public",
+    "name": "official-hash-regex-mecab-gain-blend",
     "version": "1",
     "implementation": "router_impl/router.py",
-    "artifact": "router_impl/hash-regex-public.v1.json"
+    "official_artifact": "router_impl/hash-regex-public.v1.json",
+    "gain_artifact": "router_impl/mecab-blended-gain.v1.json"
   },
-  "artifact_sha256": "c5f0545f20b902143ccb78ad174ccd5408f4c28d0898943e82e7951b6a8b9871",
+  "official_artifact_sha256": "c5f0545f20b902143ccb78ad174ccd5408f4c28d0898943e82e7951b6a8b9871",
+  "gain_artifact_sha256": "1549c899acf27af5d214df84d2602cf3d9c6c22cf1fa4a2ab33a2fa7a5ccd5c6",
   "tokenizer": {
-    "id": "regex-casefold-number-v1",
+    "id": "mecab-ko-hybrid-pos-v1",
     "implementation": "tokenizer_impl/tokenizer.py",
     "retraining_required_if_changed": true
   },
   "training": {
     "input_sha256": "029a0fb1f70432a05b837a1291d86d42278bb202d808a6a12911b0dae8628ac4",
     "outcomes_sha256": "97a5a787086b3e1d9fa9c7945518543540e527ea248df4a4760de581b612a4ba",
-    "episodes": 1760
+    "episodes": 1760,
+    "hash_bins": 1024,
+    "ridge_alphas": [30.0, 3.0]
+  },
+  "routing": {
+    "tier_hybrid_gain_weights": {
+      "fast": [0.6, 0.075],
+      "balanced": [0.5, 0.25],
+      "premium": [0.2, 0.15]
+    },
+    "tier_safety_ratios": {
+      "fast": 0.9108333333333334,
+      "balanced": 0.8916666666666666,
+      "premium": 0.9
+    },
+    "allocator": "official-lagrangian-without-premium-fill"
   },
   "policy": {
     "id": "ossp-2026-prompt-router-v1",
     "canonical_sha256": "7c892c423da5fa762e7e1a93b9fa071be51e259b65d2b63a5ba434c4342d7a8e"
   },
   "source": {
-    "voltchange_commit": "bef479ec700b1580630914e34ad4378abc41bf65",
+    "voltchange_commit": "fe300cbc2bede1418f77c6666b636cca9696b4df",
     "official_challenge_commit": "3cccbf602077a846c13b2cb1356eee1559a631db"
   },
   "runtime": {
@@ -30,7 +47,11 @@
     "base_image": "python:3.13.11-slim-bookworm@sha256:20080e807bfc404f8450b185cf0fc95d553462673598549613735f70a5b4d5d0",
     "network": false,
     "gpu": false,
-    "runtime_dependencies": [],
+    "runtime_dependencies": [
+      "mmh3==5.2.0",
+      "mecab-ko==1.0.2",
+      "mecab-ko-dic==1.0.0"
+    ],
     "limits": {
       "cpus": 2,
       "memory_bytes": 2147483648,
@@ -39,6 +60,8 @@
     }
   },
   "licenses": [
-    "Apache-2.0"
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "MIT"
   ]
 }

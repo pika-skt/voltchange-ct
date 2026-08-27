@@ -2,7 +2,8 @@
 
 This directory is a runtime-only, swappable container scaffold for the OSSP 2026
 prompt router. It implements the official `router-run` interface and defaults to the
-public artifact-backed hash/regex router already integrated by `voltchange`.
+license-compatible MeCab-ko version of the latest blended linear router from
+`voltchange`.
 
 The research repository at `../voltchange` is not modified, and its notebooks,
 outcomes, training code, caches, and local paths are not copied into the image.
@@ -30,41 +31,29 @@ The adapter never passes `episode_id`, `challenge_id`, `split`, or evaluator inp
 order to the router. It also rejects wrong-length results, unknown model IDs, and
 different choices for identical prompt content.
 
-The default implementation is intentionally dependency-free at runtime. It loads
-`router_impl/hash-regex-public.v1.json`, verifies the artifact SHA-256 against its
-manifest, verifies that the selected tokenizer ID matches the trained artifact,
-predicts with the frozen linear heads, and uses the official batch-level allocator.
+The default implementation loads the unchanged official hash-regex score/cost heads
+and a frozen MeCab-ko hybrid gain artifact. It verifies both SHA-256 digests and the
+paired tokenizer ID, then blends the two Light-relative gain predictions using the
+latest research weights and fixed safety ratios. No training data or outcomes are in
+the image.
 
 ## Measured performance
 
-The default is dependency-free, but it is not tokenizer-free: it uses the small
-stdlib-only tokenizer in `tokenizer_impl/`. The complete shipping configuration
-reproduces this public Dev result:
+The complete shipping configuration reproduces this public Dev result with the
+unchanged `voltchange/main` safety policy:
 
 | Tier | Quality | Actual cost ratio | Budget passed |
 | --- | ---: | ---: | :---: |
-| Fast | 0.663068 | 1.235989 | yes |
-| Balanced | 0.693750 | 1.961506 | yes |
-| Premium | 0.740057 | 3.985205 | yes |
-| **Weighted final** | **0.695369318182** | — | **all** |
+| Fast | 0.663920 | 1.197378 | yes |
+| Balanced | 0.702841 | 1.905316 | yes |
+| Premium | 0.747443 | 3.867218 | yes |
+| **Weighted final** | **0.700653409091** | — | **all** |
 
-For the controlled experiment in `../voltchange` that held the rest of the training
-pipeline constant, regex scored `0.688949` and Kiwi scored `0.687955`. Do not compare
-that ablation directly with `0.695369`: the shipping artifact also uses the official
-256-bin feature setup and Dev-calibrated routing safety policy.
-
-## Why the current blended research model is not the default
-
-`../voltchange` currently identifies `BlendedPosHashRegexStrategy` as its active
-research strategy. That implementation imports `kiwipiepy`; the installed package
-metadata identifies it and its model package as LGPL-3.0. The challenge's published
-submission rules require prior approval for a directly used library outside the
-listed license set. For that reason this scaffold does not silently put Kiwi into the
-shipping image.
-
-Once that dependency is approved or replaced, export only the fitted inference
-artifact and runtime feature logic into a new implementation directory. Training and
-public outcomes must remain outside the final image.
+The MeCab swap was trained once on public Train with 1,024 hybrid hash bins, 14
+structural features, and split Ridge penalties `30 / 3`. Public Dev was used only to
+verify the already-fixed policy. MeCab-ko is distributed under the selectable
+three-clause BSD terms, its dictionary is Apache-2.0, and mmh3 is MIT; all are in the
+challenge allow-list and recorded in `THIRD_PARTY_NOTICES.md`.
 
 ## Component swap contracts
 
@@ -243,10 +232,12 @@ runner additionally enforces the 4 MiB and inode limits.
 
 ## Verification
 
-Run the self-contained protocol, swap-boundary, ID/order audit, manifest, and atomic
-output tests:
+Install the hash-pinned runtime dependencies, then run the self-contained protocol,
+feature-hash, swap-boundary, ID/order, manifest, and atomic-output tests:
 
 ```bash
+python3 -m pip install --require-hashes \
+  -r router_impl/requirements.txt -r tokenizer_impl/requirements.txt
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
@@ -258,13 +249,18 @@ PYTHONPATH=. python3 tools/preflight.py \
   --input tests/data/toy-inputs.json
 ```
 
-For the default implementation, verify that the content-only sorting adapter produces
-exactly the same choices as the direct official baseline path:
+Verify that the unchanged official score/cost predictions still match the direct
+official baseline path:
 
 ```bash
 PYTHONPATH=. python3 tools/verify_default_parity.py \
-  --input tests/data/toy-inputs.json
+  --input tests/data/toy-inputs.json \
+  --official-repo ../ossp-2026-llm-router-challenge
 ```
+
+For an offline training/runtime audit, `tools/verify_mecab_training_parity.py`
+compares MeCab tokens, every emitted hybrid feature, all 1,024 normalized hash bins,
+and all structural values against the frozen `voltchange` training implementation.
 
 After building, use the authoritative checker from the official repository for the
 full public Train/Dev inputs and actual isolation/resource controls:
@@ -276,12 +272,9 @@ python3 ../ossp-2026-llm-router-challenge/tools/check_runtime.py \
   --report build/runtime-check-report.json
 ```
 
-Current host verification is recorded in `verification-report.json`: all unit tests
-and lint pass; the adapted router has zero mismatches across 5,280 Train and 2,640 Dev
-tier decisions; public Dev reproduces `0.695369318182` with all budgets passing. On
-Python 3.13.11/x86-64, full Train peaks near 82 MiB RSS and the slowest tier takes
-5.69 seconds. These are encouraging host measurements, not substitutes for the
-official ARM64 container check.
+Current verification is recorded in `verification-report.json`. Public Dev reproduces
+`0.700653409091` with all budgets passing. Host and official ARM64 container timings,
+RSS, image size, and decision digests are updated only from fresh measurements.
 
 Before a final push, also inspect the selected platform, image size, config, user,
 entry point, labels, and absence of `Volumes`. `artifact-manifest.json`,
